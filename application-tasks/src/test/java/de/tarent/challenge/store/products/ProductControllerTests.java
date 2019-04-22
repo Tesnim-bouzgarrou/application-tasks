@@ -1,32 +1,22 @@
 package de.tarent.challenge.store.products;
 
-import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.get;
-import static org.hamcrest.Matchers.*;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.mockito.Mockito.when;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.HttpStatus;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import de.tarent.challenge.store.common.AbstractTest;
-import de.tarent.challenge.store.products.Product;
-import de.tarent.challenge.store.products.ProductService;
 import io.restassured.http.ContentType;
 
 public class ProductControllerTests extends AbstractTest {
@@ -67,7 +57,7 @@ public class ProductControllerTests extends AbstractTest {
 
 	@Test
 	public void givenExistantSku_whenRetrieveProductBySku_thenReturnOk() throws Exception {
-		Product testProduct = new Product("sku-test777", "name-test", new HashSet<>());
+		Product testProduct = new Product("sku-test777", "name-test", new HashSet<>(Arrays.asList("34558821", "12323410")));
 		productService.addProduct(testProduct);
 
 		get("/products/" + testProduct.getSku()).then().assertThat().statusCode(HttpURLConnection.HTTP_OK)
@@ -90,7 +80,7 @@ public class ProductControllerTests extends AbstractTest {
 		Product testProduct = new Product("sku-test777", "new-name-test",
 				new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
 
-		String sku = given().contentType("application/json").body(testProduct).when().post("/products/new").then()
+		String sku = given().contentType(ContentType.JSON).body(testProduct).when().post("/products/new").then()
 				.assertThat().statusCode(HttpURLConnection.HTTP_CREATED).extract().path("sku");
 		assertEquals(sku, testProduct.getSku());
 
@@ -101,14 +91,106 @@ public class ProductControllerTests extends AbstractTest {
 		
 		Product testProduct = new Product("sku-test777", "new-name-test", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
 		
-		
 		  given()
 		    .body(testProduct)
 		    .contentType(ContentType.JSON)
 		  .when()
 		    .put("/products/"+testProduct.getSku())
 		  .then()
-		    .statusCode(HttpStatus.SC_OK);
+		    .statusCode(HttpURLConnection.HTTP_OK);
 	}
 	
+	
+	  @Test
+	  public void givenSkuNull_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product(null, "new-name-test", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
+	
+	  @Test
+	  public void givenSkuEmpty_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("", "new-name-test", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
+	  
+	  @Test
+	  public void givenSkuExists_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("345", "new-name-test", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+		  productService.addProduct(testProduct);
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+		    
+	  }
+	  
+	  @Test
+	  public void givenNameNull_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("abc", null, new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
+	
+	  @Test
+	  public void givenNameEmpty_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("abc", "", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
+	  
+	  
+	  @Test
+	  public void givenEansEmpty_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("abc", "product", new HashSet<>());
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
+	  
+	  @Test
+	  public void givenEansWithEmptyElt_whenAddProduct_thenReturnsStatus400() throws Exception {
+		  Product testProduct = new Product("abc", "product", new HashSet<>(Arrays.asList("eee1", "", "nnn1")));
+			
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .post("/products/new")
+		  .then()
+		    .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+	  }
 }

@@ -1,8 +1,10 @@
 package de.tarent.challenge.store.products;
 
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+
+import javax.persistence.NonUniqueResultException;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
@@ -21,7 +23,18 @@ public class ProductService {
 		return productCatalog.findBySku(sku);
 	}
 
-	public Product addProduct(Product product) {
+	public Product addProduct(Product product)throws NonUniqueResultException {
+
+		Product existingProduct = retrieveProductBySku(product.getSku());
+		if (existingProduct != null) {
+			throw new NonUniqueResultException("Product sku is not unique");
+		}
+			
+		
+		return productCatalog.save(product);
+	}
+	
+	public Product updateProduct(Product product) {
 
 		Product existingProduct = retrieveProductBySku(product.getSku());
 		if (existingProduct != null) {

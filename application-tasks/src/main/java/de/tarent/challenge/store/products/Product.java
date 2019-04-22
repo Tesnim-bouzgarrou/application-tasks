@@ -1,16 +1,25 @@
 package de.tarent.challenge.store.products;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Sets;
+import static javax.persistence.GenerationType.AUTO;
 
+import java.util.Objects;
+import java.util.Set;
+
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.util.Objects;
-import java.util.Set;
+import javax.validation.Valid;
 
-import static javax.persistence.GenerationType.AUTO;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Sets;
+
+import de.tarent.challenge.store.validator.NotEmptyElements;
+import de.tarent.challenge.store.validator.NotEmptyElementsValidator;
 
 @Entity
 public class Product {
@@ -19,11 +28,16 @@ public class Product {
     @GeneratedValue(strategy = AUTO)
     private Long id;
 
+    @Column(unique = true)
+    @NotEmpty
     private String sku;
 
+    @NotEmpty
     private String name;
 
     @ElementCollection
+    @NotEmpty
+    @NotEmptyElements
     private Set<String> eans;
 
     private Product() {
