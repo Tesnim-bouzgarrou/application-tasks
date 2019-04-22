@@ -4,6 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +35,16 @@ public class ProductController {
 
 	}
 
-	
+	@PostMapping("/new")
+	public ResponseEntity<Object> createProduct(@RequestBody Product product) {
+		productService.addProduct(product);
+		return new ResponseEntity<>(product, HttpStatus.CREATED);
+	}
+
+	@PutMapping("/{sku}")
+	public ResponseEntity<Object> updateProduct(@RequestBody Product product) {
+		productService.addProduct(product);
+		return new ResponseEntity<>(product, HttpStatus.OK);
+	}
+
 }

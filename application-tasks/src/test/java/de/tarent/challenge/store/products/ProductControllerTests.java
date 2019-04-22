@@ -41,15 +41,17 @@ public class ProductControllerTests extends AbstractTest {
 	@Before
 	public void setup() {
 		super.setUp();
-	
+
 	}
-	
+
 	@Before
 	public void initDB() {
 		productService.deleteAllProducts();
-		Product testProduct = new Product("Milch", "102", new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
+		Product testProduct = new Product("Milch", "102",
+				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
 		Product testProduct1 = new Product("Brot", "2035", new HashSet<>(Arrays.asList("34558821", "12323410")));
-		Product testProduct2 = new Product("Käse", "S-155", new HashSet<>(Arrays.asList("34598146", "43565922", "23454045")));
+		Product testProduct2 = new Product("Käse", "S-155",
+				new HashSet<>(Arrays.asList("34598146", "43565922", "23454045")));
 		productService.addProduct(testProduct);
 		productService.addProduct(testProduct1);
 		productService.addProduct(testProduct2);
@@ -72,14 +74,41 @@ public class ProductControllerTests extends AbstractTest {
 				.body("sku", equalTo(testProduct.getSku())).body("name", equalTo(testProduct.getName()));
 
 	}
-	
+
 	@Test
 	public void givenNonexistantSku_whenRetrieveProductBySku_thenReturnNotFound() throws Exception {
-		
+
 		String sku = RandomStringUtils.randomAlphabetic(8);
 		get("/products/" + sku).then().assertThat().statusCode(HttpURLConnection.HTTP_NOT_FOUND);
 
 	}
 
+
+
+	@Test
+	public void createProduct() throws Exception {
+		Product testProduct = new Product("sku-test777", "new-name-test",
+				new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+
+		String sku = given().contentType("application/json").body(testProduct).when().post("/products/new").then()
+				.assertThat().statusCode(HttpURLConnection.HTTP_CREATED).extract().path("sku");
+		assertEquals(sku, testProduct.getSku());
+
+	}
+
+	@Test
+	public void updateProduct() throws Exception {
+		
+		Product testProduct = new Product("sku-test777", "new-name-test", new HashSet<>(Arrays.asList("eee1", "aaa1", "nnn1")));
+		
+		
+		  given()
+		    .body(testProduct)
+		    .contentType(ContentType.JSON)
+		  .when()
+		    .put("/products/"+testProduct.getSku())
+		  .then()
+		    .statusCode(HttpStatus.SC_OK);
+	}
 	
 }
