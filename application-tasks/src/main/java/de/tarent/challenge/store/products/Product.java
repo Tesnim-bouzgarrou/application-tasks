@@ -72,4 +72,18 @@ public class Product {
                 .add("eans", eans)
                 .toString();
     }
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setEans(Set<String> eans) {
+		this.eans = eans;
+	}
+
+	public void mergeWith(Product product) {
+		this.setName(product.getName());
+		this.setEans(product.getEans());
+		
+	}
 }
