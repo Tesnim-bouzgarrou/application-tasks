@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,6 +27,9 @@ public class ProductServiceTests extends AbstractTest {
 	
 	private ProductService productService;
 	
+	private final Product TEST_PRODUCT = new Product("Milch", "102",
+			new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")), BigDecimal.valueOf(20));
+	
 	  @Mock
 	  private ProductCatalog productCatalog;
 
@@ -42,10 +46,10 @@ public class ProductServiceTests extends AbstractTest {
 	@Test
 	public void retrieveAllProducts() {
 		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
-		Product testProduct1 = new Product("Brot", "2035", new HashSet<>(Arrays.asList("34558821", "12323410")));
+				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")), BigDecimal.valueOf(20));
+		Product testProduct1 = new Product("Brot", "2035", new HashSet<>(Arrays.asList("34558821", "12323410")), BigDecimal.valueOf(30));
 		Product testProduct2 = new Product("Käse", "S-155",
-				new HashSet<>(Arrays.asList("34598146", "43565922", "23454045")));
+				new HashSet<>(Arrays.asList("34598146", "43565922", "23454045")), BigDecimal.valueOf(40));
 		List<Product> products = new ArrayList<>();
 		products.add(testProduct);
 		products.add(testProduct1);
@@ -60,56 +64,47 @@ public class ProductServiceTests extends AbstractTest {
 	
 	@Test
 	public void retrieveProductBySku() {
-		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
 		
-	  when(productCatalog.findBySku(anyString())).thenReturn(testProduct);
-	  assertEquals(productService.retrieveProductBySku("102"), testProduct);
+	  when(productCatalog.findBySku(anyString())).thenReturn(TEST_PRODUCT);
+	  assertEquals(productService.retrieveProductBySku("102"), TEST_PRODUCT);
 	}
 
 	
 	@Test(expected = NonUniqueResultException.class)
 	public void givenProductExists_whenAddProduct_thenException() {
-		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
 		
-	  when(productCatalog.findBySku(anyString())).thenReturn(testProduct);
-	  when(productCatalog.save(testProduct)).thenReturn(testProduct);
+	  when(productCatalog.findBySku(anyString())).thenReturn(TEST_PRODUCT);
+	  when(productCatalog.save(TEST_PRODUCT)).thenReturn(TEST_PRODUCT);
 	  
-	   productService.addProduct(testProduct);
+	   productService.addProduct(TEST_PRODUCT);
 	}
 	
 	@Test
 	public void givenProductNotExists_whenAddProduct_thenOk() {
-		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
-		
+	
 	  when(productCatalog.findBySku(anyString())).thenReturn(null);
-	  when(productCatalog.save(testProduct)).thenReturn(testProduct);
+	  when(productCatalog.save(TEST_PRODUCT)).thenReturn(TEST_PRODUCT);
 	  
-	  assertEquals(productService.addProduct(testProduct), testProduct);
+	  assertEquals(productService.addProduct(TEST_PRODUCT), TEST_PRODUCT);
 	}
 	
 	@Test
 	public void givenProductExists_whenUpdateProduct_thenOk() {
-		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
+		
 		
 	  when(productCatalog.findBySku(anyString())).thenReturn(null);
-	  when(productCatalog.save(testProduct)).thenReturn(testProduct);
+	  when(productCatalog.save(TEST_PRODUCT)).thenReturn(TEST_PRODUCT);
 	  
-	  assertEquals(productService.updateProduct(testProduct), testProduct);
+	  assertEquals(productService.updateProduct(TEST_PRODUCT), TEST_PRODUCT);
 	}
 	
 	@Test
 	public void givenProductNotExists_whenUpdateProduct_thenOk() {
-		Product testProduct = new Product("Milch", "102",
-				new HashSet<>(Arrays.asList("12345678", "77777777", "23498128")));
 		
 	  when(productCatalog.findBySku(anyString())).thenReturn(null);
-	  when(productCatalog.save(testProduct)).thenReturn(testProduct);
+	  when(productCatalog.save(TEST_PRODUCT)).thenReturn(TEST_PRODUCT);
 	  
-	  assertEquals(productService.updateProduct(testProduct), testProduct);
+	  assertEquals(productService.updateProduct(TEST_PRODUCT), TEST_PRODUCT);
 	}
 
 }

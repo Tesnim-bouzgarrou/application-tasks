@@ -2,6 +2,7 @@ package de.tarent.challenge.store.products;
 
 import static javax.persistence.GenerationType.AUTO;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.Valid;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -43,15 +46,37 @@ public class Product {
     @NotEmpty
     @NotEmptyElements
     private Set<String> eans;
+    
+    @NotNull
+    @DecimalMin(value = "0.0", inclusive = false)
+    private BigDecimal price;
 
-    private Product() {
+    public BigDecimal getPrice() {
+		return price;
+	}
+
+	public void setPrice(BigDecimal price) {
+		this.price = price;
+	}
+
+	private Product() {
     }
 
-    public Product(String sku, String name, Set<String> eans) {
-        this.sku = sku;
-        this.name = name;
-        this.eans = eans;
-    }
+	
+	
+    public Product(String sku, String name, Set<String> eans, BigDecimal price) {
+		super();
+		this.sku = sku;
+		this.name = name;
+		this.eans = eans;
+		this.price = price;
+	}
+
+//	public Product(String sku, String name, Set<String> eans) {
+//        this.sku = sku;
+//        this.name = name;
+//        this.eans = eans;
+//    }
 
     public String getSku() {
         return sku;
