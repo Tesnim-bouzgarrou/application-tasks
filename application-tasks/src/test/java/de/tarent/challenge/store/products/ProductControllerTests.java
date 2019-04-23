@@ -19,6 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.tarent.challenge.store.common.AbstractTest;
 import io.restassured.http.ContentType;
 
+/**
+ * Functional (End to End) Tests for ProductController
+ * @author tasnim
+ *
+ */
 public class ProductControllerTests extends AbstractTest {
 
 	@Autowired

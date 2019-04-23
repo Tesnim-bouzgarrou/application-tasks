@@ -32,7 +32,11 @@ public class Product {
     @NotEmpty
     private String sku;
 
-    @NotEmpty
+    public Long getId() {
+		return id;
+	}
+
+	@NotEmpty
     private String name;
 
     @ElementCollection
