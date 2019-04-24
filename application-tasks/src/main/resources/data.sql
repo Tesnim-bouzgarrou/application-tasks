@@ -15,3 +15,9 @@ INSERT INTO product_eans (product_id, eans) VALUES (3, '23454045');
 INSERT INTO product_eans (product_id, eans) VALUES (4, '18754629');
 INSERT INTO product_eans (product_id, eans) VALUES (4, '46025548');
 INSERT INTO product_eans (product_id, eans) VALUES (5, '54342316');
+
+insert into users(id, username,password,enabled) values(1,'user1','user1',true);
+insert into users(id, username,password,enabled) values(2,'user2','user2',true);
+--
+--insert into authorities(username,authority) values('steve','admin');
+--insert into authorities(username,authority) values('john','superadmin');
