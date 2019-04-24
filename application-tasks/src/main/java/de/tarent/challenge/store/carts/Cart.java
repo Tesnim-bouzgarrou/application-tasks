@@ -61,7 +61,7 @@ public class Cart {
 		for (CartItem cartItem : items) {
 			if (cartItem.getQuantity() > 0) {
 				this.addCartItem(cartItem);
-				cartItem.setCart(this);
+				
 			}
 		}
 
@@ -143,7 +143,7 @@ public class Cart {
 
 	public void addCartItem(CartItem cartItem) {
 		this.cartItems.add(cartItem);
-		// cartItem.setCart(this);
+		cartItem.setCart(this);
 	}
 
 	public void removeCartItem(CartItem cartItem) {

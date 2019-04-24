@@ -32,16 +32,15 @@ public class CartController {
 		this.cartService = productService;
 	}
 
-	@GetMapping("/carts")
-	public Iterable<Cart> retrieveAllCarts() {
-		return cartService.retrieveAllCarts();
-	}
+//	@GetMapping("/carts")
+//	public Iterable<Cart> retrieveAllCarts() {
+//		return cartService.retrieveAllCarts();
+//	}
 	
-	@GetMapping("/cartitems")
-	public Iterable<Cart> retrieveAllCartItems() {
-		return cartService.retrieveAllItems();
-	}
 
+	/**
+	 * Create a new Cart for User if it does not already exist.
+	 */
 	@PostMapping("cart/{userId}/new")
 	public ResponseEntity<Object> createNewCart(@PathVariable Long userId,@Valid @RequestBody Set<CartItemDTO> items) throws StoreException {
 		
@@ -51,6 +50,9 @@ public class CartController {
 
 	}
 	
+	/**
+	 * Check the current Cart for the user.
+	 */
 	@GetMapping("cart/{userId}")
 	public ResponseEntity<Object> getCurrentCart(@PathVariable Long userId) throws StoreException {
 		
@@ -59,13 +61,36 @@ public class CartController {
 
 	}
 	
+	/**
+	 * Check cart by id and userId
+	 */
+	@GetMapping("cart/{userId}/{cartId}")  
+	public ResponseEntity<Object> getCart(@PathVariable Long userId, @PathVariable Long cartId) throws StoreException {
+		
+		Cart currentCart = cartService.retrieveCartByIdAndUser(cartId , userId);
+		return new ResponseEntity<>(currentCart, HttpStatus.OK);
+
+	}
 	
+	
+	/**
+	 * Add new Item for the current (open) Cart of user.
+	 */
 	@PatchMapping("/cart/{userId}/addItem")
 	public ResponseEntity<Object> addItemToCart(@PathVariable Long userId,@Valid  @RequestBody CartItemDTO cartItem) throws StoreException {
 		
 		Cart modifiedCart = cartService.addItemToCurrentCartOfUser(cartItem, userId);
 		return new ResponseEntity<>(modifiedCart, HttpStatus.OK);
 
+	}
+	
+	/**
+	 * Checkout current cart of user
+	 */
+	@GetMapping("/cart/{userId}/checkout")
+	public ResponseEntity<Object> checkoutCart(@PathVariable Long userId) throws StoreException {
+		Cart checkedoutCart = cartService.checkoutCurrentCartByUser(userId);
+		return new ResponseEntity<>(checkedoutCart, HttpStatus.OK);
 	}
 
 
