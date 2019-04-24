@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +56,15 @@ public class CartController {
 		
 		Cart currentCart = cartService.retrieveCurrentCartByUser(userId);
 		return new ResponseEntity<>(currentCart, HttpStatus.OK);
+
+	}
+	
+	
+	@PatchMapping("/cart/{userId}/addItem")
+	public ResponseEntity<Object> addItemToCart(@PathVariable Long userId,@Valid  @RequestBody CartItemDTO cartItem) throws StoreException {
+		
+		Cart modifiedCart = cartService.addItemToCurrentCartOfUser(cartItem, userId);
+		return new ResponseEntity<>(modifiedCart, HttpStatus.OK);
 
 	}
 

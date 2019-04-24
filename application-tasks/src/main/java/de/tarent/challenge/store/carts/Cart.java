@@ -51,26 +51,26 @@ public class Cart {
 
 	private Cart() {
 	}
-	
-	
 
 	public Cart(User user, Set<CartItem> items) {
 		super();
 		this.user = user;
 		this.status = CartStatus.CREATED;
 		this.createdAt = new Date();
-		
+
 		for (CartItem cartItem : items) {
-			this.addCartItem(cartItem);
-			cartItem.setCart(this);
+			if (cartItem.getQuantity() > 0) {
+				this.addCartItem(cartItem);
+				cartItem.setCart(this);
+			}
 		}
-		
+
 		this.updateTotal();
 	}
-	
+
 	public void updateTotal() {
 
-		MathContext mc = new MathContext(4); 
+		MathContext mc = new MathContext(4);
 		BigDecimal total = new BigDecimal(0);
 		for (CartItem cartItem : cartItems) {
 			BigDecimal price = cartItem.getProduct().getPrice();
@@ -78,25 +78,19 @@ public class Cart {
 			total = total.add(price.multiply(qte, mc));
 		}
 		this.total = total;
-		
+
 	}
 
-
-
-	public Cart( Set<CartItem> items) {
+	public Cart(Set<CartItem> items) {
 		super();
 		this.status = CartStatus.CREATED;
 		this.cartItems = items;
 		this.createdAt = new Date();
 	}
 
-
-
 	public Long getId() {
 		return id;
 	}
-
-
 
 	public User getUser() {
 		return user;
@@ -139,44 +133,75 @@ public class Cart {
 	}
 
 	public Set<CartItem> getCartItems() {
-		//return Sets.newHashSet(cartItems);
+		// return Sets.newHashSet(cartItems);
 		return cartItems;
 	}
 
 	public void setCartItems(Set<CartItem> cartItems) {
 		this.cartItems = cartItems;
 	}
-	
-	 public void addCartItem(CartItem cartItem) {
-		 this.cartItems.add(cartItem);
-		 //cartItem.setCart(this);
-	    }
-	 
-	    public void removeCartItem(CartItem cartItem) {
-	    	this.cartItems.remove(cartItem);
-	        cartItem.setCart(null);
-	    }
 
-//	@Override
-//	public boolean equals(Object o) {
-//		if (this == o)
-//			return true;
-//		if (o == null || getClass() != o.getClass())
-//			return false;
-//		Cart cart = (Cart) o;
-//		return Objects.equals(this.id, cart.id) && Objects.equals(this.total, cart.total)
-//				&& Objects.equals(this.createdAt, cart.createdAt) && Objects.equals(this.modifiedAt, cart.modifiedAt);
-//	}
-//
-//	@Override
-//	public int hashCode() {
-//		return Objects.hash(id, total, user.getId());
-//	}
+	public void addCartItem(CartItem cartItem) {
+		this.cartItems.add(cartItem);
+		// cartItem.setCart(this);
+	}
+
+	public void removeCartItem(CartItem cartItem) {
+		this.cartItems.remove(cartItem);
+		cartItem.setCart(null);
+	}
+
+	// @Override
+	// public boolean equals(Object o) {
+	// if (this == o)
+	// return true;
+	// if (o == null || getClass() != o.getClass())
+	// return false;
+	// Cart cart = (Cart) o;
+	// return Objects.equals(this.id, cart.id) && Objects.equals(this.total,
+	// cart.total)
+	// && Objects.equals(this.createdAt, cart.createdAt) &&
+	// Objects.equals(this.modifiedAt, cart.modifiedAt);
+	// }
+	//
+	// @Override
+	// public int hashCode() {
+	// return Objects.hash(id, total, user.getId());
+	// }
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this).add("id", id).add("user", user.getId()).add("createdAt", this.createdAt).add("status", this.status)
-				.toString();
+		return MoreObjects.toStringHelper(this).add("id", id).add("user", user.getId()).add("createdAt", this.createdAt)
+				.add("status", this.status).toString();
+	}
+
+	/**
+	 * If the product exists already in the cart just update quantity and price
+	 * If the product exists already in the cart and the quantity is zero then remove the CartItem
+	 * If the product is new, add it as a CartItem
+	 * @param cartItem
+	 */
+	public void mergeCartItem(CartItem cartItem) {
+		CartItem existingProductcartItem = this.cartItems.stream()
+				.filter(item -> item.getProduct().getSku().equals(cartItem.getProduct().getSku())).findAny()
+				.orElse(null);
+		if (existingProductcartItem != null) {
+			if (cartItem.getQuantity() > 0) {
+				existingProductcartItem.setQuantity(cartItem.getQuantity());
+				existingProductcartItem.setPrice(cartItem.getProduct().getPrice());
+			} else {
+				this.removeCartItem(existingProductcartItem);
+			}
+		} else {
+			this.addCartItem(cartItem);
+		}
+
+	}
+
+	public CartItem getCartItemOfProduct(String productSku) {
+		CartItem existingProductcartItem = this.cartItems.stream()
+				.filter(item -> item.getProduct().getSku().equals(productSku)).findAny().orElse(null);
+		return existingProductcartItem;
 	}
 
 }

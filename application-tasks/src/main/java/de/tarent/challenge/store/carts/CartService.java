@@ -24,16 +24,15 @@ import de.tarent.challenge.store.users.UserCatalog;
 public class CartService {
 
 	private final CartCatalog cartCatalog;
-	
 
 	@Autowired
 	private ProductCatalog productCatalog;
 
 	@Autowired
 	private UserCatalog userCatalog;
-	
+
 	@PersistenceContext
-    EntityManager entityManager;
+	EntityManager entityManager;
 
 	public CartService(CartCatalog productCatalog) {
 		this.cartCatalog = productCatalog;
@@ -43,20 +42,18 @@ public class CartService {
 
 		return cartCatalog.findByUserAndStatus(user, CartStatus.CREATED);
 	}
-	
-	
-	
+
 	public Cart retrieveCurrentCartByUser(Long userId) throws StoreException {
 		User user = userCatalog.findOne(userId);
 		if (user == null) {
 			throw new UserNotFoundException("User " + userId + " not found");
 		}
 
-		Cart cart =  cartCatalog.findByUserAndStatus(user, CartStatus.CREATED);
-		if(cart == null) {
-			throw new NoCurrentCartException("No cart for User "+user.getId()+" exists, please create one");
+		Cart cart = cartCatalog.findByUserAndStatus(user, CartStatus.CREATED);
+		if (cart == null) {
+			throw new NoCurrentCartException("No cart for User " + user.getId() + " exists, please create one");
 		}
-		
+
 		return cart;
 	}
 
@@ -77,9 +74,9 @@ public class CartService {
 
 		Set<CartItem> items = createCartItemsFromDTO(itemsDTO);
 		Cart cart = new Cart(user, items);
-		
+
 		cart = cartCatalog.save(cart);
-	
+
 		return cart;
 
 	}
@@ -87,14 +84,22 @@ public class CartService {
 	private Set<CartItem> createCartItemsFromDTO(Set<CartItemDTO> itemsDTO) {
 		Set<CartItem> items = new HashSet<CartItem>();
 		for (CartItemDTO cartItemDTO : itemsDTO) {
-			Product product = productCatalog.findBySku(cartItemDTO.getSku());
 
-			if (product != null && cartItemDTO.getQuantity() > 0) {
-				CartItem cartItem = new CartItem(product, cartItemDTO.getQuantity(), product.getPrice());
+			CartItem cartItem = createCartItemsFromDTO(cartItemDTO);
+			if (cartItem != null) {
 				items.add(cartItem);
 			}
 		}
 		return items;
+	}
+
+	private CartItem createCartItemsFromDTO(CartItemDTO cartItemDTO) {
+		CartItem cartItem = null;
+		Product product = productCatalog.findBySku(cartItemDTO.getSku());
+		if (product != null ) {
+			cartItem = new CartItem(product, cartItemDTO.getQuantity(), product.getPrice());
+		}
+		return cartItem;
 	}
 
 	public Cart addItemToCart(Long idCart, String skuProduct, Long quantity) {
@@ -106,15 +111,33 @@ public class CartService {
 		return cart;
 	}
 
+	public Cart addItemToCurrentCartOfUser(CartItemDTO cartItemDto, Long userId) throws StoreException {
+		User user = userCatalog.findOne(userId);
+		if (user == null) {
+			throw new UserNotFoundException("User " + userId + " not found");
+		}
+
+		Cart currentCart = retrieveCurrentCartByUser(user);
+		if (currentCart == null) {
+			throw new NoCurrentCartException("No cart for User " + user.getId() + " exists, please create one");
+		}
+		CartItem cartItem = createCartItemsFromDTO(cartItemDto);
+		currentCart.mergeCartItem(cartItem);
+		currentCart.updateTotal();
+		cartCatalog.save(currentCart);
+
+		return currentCart;
+	}
+
 	public Iterable<Cart> retrieveAllCarts() {
 		return cartCatalog.findAll();
 	}
-	
+
 	public Iterable<Cart> retrieveAllItems() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public void deleteAllCarts() {
 		cartCatalog.deleteAll();
 	}
@@ -134,9 +157,5 @@ public class CartService {
 	public void setProductCatalog(ProductCatalog productCatalog) {
 		this.productCatalog = productCatalog;
 	}
-
-	
-
-	
 
 }

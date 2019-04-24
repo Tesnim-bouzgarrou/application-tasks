@@ -1,5 +1,6 @@
 package de.tarent.challenge.store.carts.dto;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -10,6 +11,7 @@ public class CartItemDTO {
 	private String sku;
 	
 	@NotNull
+	@DecimalMin(value = "0.0", inclusive = false)
 	private Long quantity;
 	
 	
