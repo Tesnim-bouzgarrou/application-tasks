@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.base.MoreObjects;
 
 import de.tarent.challenge.store.users.User;
@@ -39,8 +40,10 @@ public class Order {
 	@JoinColumn(name = "idUser", nullable = false)
 	private User user;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date createdAt;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date modifiedAt;
 
 	private OrderStatus status;

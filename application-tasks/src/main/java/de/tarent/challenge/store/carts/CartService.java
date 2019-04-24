@@ -16,6 +16,7 @@ import de.tarent.challenge.store.exceptions.CartNotForUserException;
 import de.tarent.challenge.store.exceptions.CartWithoutItemsException;
 import de.tarent.challenge.store.exceptions.NoCartFoundExcption;
 import de.tarent.challenge.store.exceptions.NoCurrentCartException;
+import de.tarent.challenge.store.exceptions.NoProductWithSkufoundException;
 import de.tarent.challenge.store.exceptions.StoreException;
 import de.tarent.challenge.store.exceptions.UserNotFoundException;
 import de.tarent.challenge.store.orders.Order;
@@ -210,6 +211,12 @@ public class CartService {
 		if (currentCart == null) {
 			throw new NoCurrentCartException("No open cart for User " + user.getId() + " exists, please create one");
 		}
+		
+		Product product = productCatalog.findBySku(cartItemDto.getSku());
+		if(product == null) {
+			throw new NoProductWithSkufoundException(" No product with sku "+cartItemDto.getSku()+" is found");
+		}
+		
 		CartItem cartItem = createCartItemsFromDTO(cartItemDto);
 		currentCart.mergeCartItem(cartItem);
 		currentCart.updateTotal();
