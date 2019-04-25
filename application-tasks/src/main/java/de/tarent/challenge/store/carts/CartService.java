@@ -2,6 +2,7 @@ package de.tarent.challenge.store.carts;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -273,11 +274,17 @@ public class CartService {
 		Cart cart = cartCatalog.findOne(cartId);
 		cart.setStatus(CartStatus.ORDERED);
 		cart.setModifiedAt(new Date());
+		cart.setCheckedOutAt(new Date());
 		Order order = orderService.createOrderFromCart(cart);
 		cartCatalog.save(cart);
 		orderService.getOrderCatalog().save(order);
 		return cart;
 
+	}
+	
+	public List<Cart> getCartsByStatus(CartStatus status) {
+		
+		return cartCatalog.findByStatus(status);
 	}
 
 	public Iterable<Cart> retrieveAllCarts() {
@@ -308,5 +315,7 @@ public class CartService {
 	public void setProductCatalog(ProductCatalog productCatalog) {
 		this.productCatalog = productCatalog;
 	}
+
+
 
 }

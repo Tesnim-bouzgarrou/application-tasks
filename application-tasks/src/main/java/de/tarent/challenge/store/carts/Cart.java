@@ -40,9 +40,12 @@ public class Cart {
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date createdAt;
-	
+
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date modifiedAt;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+	private Date checkedOutAt;
 
 	private CartStatus status;
 
@@ -64,14 +67,14 @@ public class Cart {
 		for (CartItem cartItem : items) {
 			if (cartItem.getQuantity() > 0) {
 				this.addCartItem(cartItem);
-				
+
 			}
 		}
 
 		this.updateTotal();
 	}
 
-	public void updateTotal() {
+	public synchronized void updateTotal() {
 
 		MathContext mc = new MathContext(4);
 		BigDecimal total = new BigDecimal(0);
@@ -154,23 +157,13 @@ public class Cart {
 		cartItem.setCart(null);
 	}
 
-	// @Override
-	// public boolean equals(Object o) {
-	// if (this == o)
-	// return true;
-	// if (o == null || getClass() != o.getClass())
-	// return false;
-	// Cart cart = (Cart) o;
-	// return Objects.equals(this.id, cart.id) && Objects.equals(this.total,
-	// cart.total)
-	// && Objects.equals(this.createdAt, cart.createdAt) &&
-	// Objects.equals(this.modifiedAt, cart.modifiedAt);
-	// }
-	//
-	// @Override
-	// public int hashCode() {
-	// return Objects.hash(id, total, user.getId());
-	// }
+	public Date getCheckedOutAt() {
+		return checkedOutAt;
+	}
+
+	public void setCheckedOutAt(Date checkedOutAt) {
+		this.checkedOutAt = checkedOutAt;
+	}
 
 	@Override
 	public String toString() {
@@ -179,12 +172,13 @@ public class Cart {
 	}
 
 	/**
-	 * If the product exists already in the cart just update quantity and price
-	 * If the product exists already in the cart and the quantity is zero then remove the CartItem
-	 * If the product is new, add it as a CartItem
+	 * If the product exists already in the cart just update quantity and price If
+	 * the product exists already in the cart and the quantity is zero then remove
+	 * the CartItem If the product is new, add it as a CartItem
+	 * 
 	 * @param cartItem
 	 */
-	public void mergeCartItem(CartItem cartItem) {
+	public synchronized void mergeCartItem(CartItem cartItem) {
 		CartItem existingProductcartItem = this.cartItems.stream()
 				.filter(item -> item.getProduct().getSku().equals(cartItem.getProduct().getSku())).findAny()
 				.orElse(null);
