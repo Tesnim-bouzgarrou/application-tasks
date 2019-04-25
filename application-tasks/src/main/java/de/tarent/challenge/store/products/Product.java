@@ -47,6 +47,8 @@ public class Product {
 	@NotNull
 	@DecimalMin(value = "0.0", inclusive = false)
 	private BigDecimal price;
+	
+	private Boolean enabled;
 
 	public Product() {
 	}
@@ -57,6 +59,7 @@ public class Product {
 		this.name = name;
 		this.eans = eans;
 		this.price = price;
+		this.enabled = true;
 	}
 
 
@@ -110,10 +113,24 @@ public class Product {
 	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
+	
+	
+
+	public void setSku(String sku) {
+		this.sku = sku;
+	}
 
 	public void mergeWith(Product product) {
 		this.setName(product.getName());
 		this.setEans(product.getEans());
 
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 }

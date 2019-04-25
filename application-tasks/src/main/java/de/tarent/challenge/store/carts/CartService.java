@@ -17,10 +17,10 @@ import de.tarent.challenge.store.exceptions.CartWithoutItemsException;
 import de.tarent.challenge.store.exceptions.NoCartFoundExcption;
 import de.tarent.challenge.store.exceptions.NoCurrentCartException;
 import de.tarent.challenge.store.exceptions.NoProductWithSkufoundException;
+import de.tarent.challenge.store.exceptions.ProductNotEnabledException;
 import de.tarent.challenge.store.exceptions.StoreException;
 import de.tarent.challenge.store.exceptions.UserNotFoundException;
 import de.tarent.challenge.store.orders.Order;
-import de.tarent.challenge.store.orders.OrderCatalog;
 import de.tarent.challenge.store.orders.OrderService;
 import de.tarent.challenge.store.products.Product;
 import de.tarent.challenge.store.products.ProductCatalog;
@@ -37,10 +37,9 @@ public class CartService {
 
 	@Autowired
 	private UserCatalog userCatalog;
-	
+
 	@Autowired
 	private OrderService orderService;
-
 
 	@PersistenceContext
 	EntityManager entityManager;
@@ -83,24 +82,25 @@ public class CartService {
 
 		return cart;
 	}
-	
+
 	/**
 	 * get cart by id and user
+	 * 
 	 * @param userId
 	 * @return
-	 * @throws StoreException 
+	 * @throws StoreException
 	 */
-	public Cart retrieveCartByIdAndUser( Long cartId , Long userId) throws StoreException {
+	public Cart retrieveCartByIdAndUser(Long cartId, Long userId) throws StoreException {
 		Cart cart = cartCatalog.findOne(cartId);
-		
-		if(cart == null) {
-			throw new NoCartFoundExcption("No cart found with ID "+cartId);
+
+		if (cart == null) {
+			throw new NoCartFoundExcption("No cart found with ID " + cartId);
 		}
-		
-		if(!cart.getUser().getId().equals(userId)) {
-			throw new CartNotForUserException("the cart "+cartId+" doens't belong to the User "+userId);
+
+		if (!cart.getUser().getId().equals(userId)) {
+			throw new CartNotForUserException("the cart " + cartId + " doens't belong to the User " + userId);
 		}
-		
+
 		return cart;
 	}
 
@@ -115,7 +115,7 @@ public class CartService {
 	 * @throws StoreException
 	 *             thrown if user not found or Cart empty
 	 */
-	public Cart createNewCartForUser(Long userId, Set<CartItemDTO> itemsDTO) throws StoreException {
+	public synchronized Cart createNewCartForUser(Long userId, Set<CartItemDTO> itemsDTO) throws StoreException {
 		User user = userCatalog.findOne(userId);
 		if (user == null) {
 			throw new UserNotFoundException("User " + userId + " not found");
@@ -145,8 +145,9 @@ public class CartService {
 	 * @param itemsDTO
 	 *            List of cartItemDTO coming from the client
 	 * @return list of cartItems
+	 * @throws StoreException
 	 */
-	private Set<CartItem> createCartItemsFromDTO(Set<CartItemDTO> itemsDTO) {
+	private Set<CartItem> createCartItemsFromDTO(Set<CartItemDTO> itemsDTO) throws StoreException {
 		Set<CartItem> items = new HashSet<CartItem>();
 		for (CartItemDTO cartItemDTO : itemsDTO) {
 
@@ -163,13 +164,22 @@ public class CartService {
 	 * 
 	 * @param cartItemDTO
 	 * @return
+	 * @throws StoreException
 	 */
-	private CartItem createCartItemsFromDTO(CartItemDTO cartItemDTO) {
+	private CartItem createCartItemsFromDTO(CartItemDTO cartItemDTO) throws StoreException {
+
 		CartItem cartItem = null;
 		Product product = productCatalog.findBySku(cartItemDTO.getSku());
-		if (product != null) {
-			cartItem = new CartItem(product, cartItemDTO.getQuantity(), product.getPrice());
+		if (product == null) {
+			return null;
 		}
+		if (!product.getEnabled()) {
+			throw new ProductNotEnabledException(
+					" Product with sku " + cartItemDTO.getSku() + " is disabled it cannot be added to cart");
+		}
+
+		cartItem = new CartItem(product, cartItemDTO.getQuantity(), product.getPrice());
+
 		return cartItem;
 	}
 
@@ -183,12 +193,25 @@ public class CartService {
 	 * @param quantity
 	 *            the quantity of product
 	 * @return the updated Cart
+	 * @throws StoreException
 	 */
-	public Cart addItemToCart(Long idCart, String skuProduct, Long quantity) {
+	public synchronized Cart addItemToCart(Long idCart, String skuProduct, Long quantity) throws StoreException {
 
 		Cart cart = cartCatalog.findOne(idCart);
 		Product product = productCatalog.findBySku(skuProduct);
+
+		if (product == null) {
+			throw new NoProductWithSkufoundException(" No product with sku " + skuProduct + " is found");
+		}
+
+		if (!product.getEnabled()) {
+			throw new ProductNotEnabledException(
+					" Product with sku " + skuProduct + " is disabled it cannot be added to cart");
+		}
+
 		cart.getCartItems().add(new CartItem(cart, product, quantity, product.getPrice()));
+		cart.updateTotal();
+		cart.setModifiedAt(new Date());
 		cartCatalog.save(cart);
 		return cart;
 	}
@@ -201,7 +224,7 @@ public class CartService {
 	 * @return
 	 * @throws StoreException
 	 */
-	public Cart addItemToCurrentCartOfUser(CartItemDTO cartItemDto, Long userId) throws StoreException {
+	public synchronized Cart addItemToCurrentCartOfUser(CartItemDTO cartItemDto, Long userId) throws StoreException {
 		User user = userCatalog.findOne(userId);
 		if (user == null) {
 			throw new UserNotFoundException("User " + userId + " not found");
@@ -211,12 +234,17 @@ public class CartService {
 		if (currentCart == null) {
 			throw new NoCurrentCartException("No open cart for User " + user.getId() + " exists, please create one");
 		}
-		
+
 		Product product = productCatalog.findBySku(cartItemDto.getSku());
-		if(product == null) {
-			throw new NoProductWithSkufoundException(" No product with sku "+cartItemDto.getSku()+" is found");
+		if (product == null) {
+			throw new NoProductWithSkufoundException(" No product with sku " + cartItemDto.getSku() + " is found");
 		}
-		
+
+		if (!product.getEnabled()) {
+			throw new ProductNotEnabledException(
+					" Product with sku " + cartItemDto.getSku() + " is disabled it cannot be added to cart");
+		}
+
 		CartItem cartItem = createCartItemsFromDTO(cartItemDto);
 		currentCart.mergeCartItem(cartItem);
 		currentCart.updateTotal();
@@ -232,16 +260,16 @@ public class CartService {
 	 * @param userId
 	 *            the cart owner
 	 * @return
-	 * @throws StoreException 
+	 * @throws StoreException
 	 */
-	public Cart checkoutCurrentCartByUser(Long userId) throws StoreException {
-		
+	public  Cart checkoutCurrentCartByUser(Long userId) throws StoreException {
+
 		Cart currentCart = retrieveCurrentCartByUser(userId);
 		return checkoutCart(currentCart.getId());
 
 	}
 
-	private Cart checkoutCart(Long cartId) {
+	private synchronized Cart checkoutCart(Long cartId) {
 		Cart cart = cartCatalog.findOne(cartId);
 		cart.setStatus(CartStatus.ORDERED);
 		cart.setModifiedAt(new Date());
@@ -280,7 +308,5 @@ public class CartService {
 	public void setProductCatalog(ProductCatalog productCatalog) {
 		this.productCatalog = productCatalog;
 	}
-
-	
 
 }

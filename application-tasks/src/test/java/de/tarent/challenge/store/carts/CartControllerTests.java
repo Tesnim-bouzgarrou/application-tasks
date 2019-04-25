@@ -22,6 +22,8 @@ import de.tarent.challenge.store.common.AbstractTest;
 import de.tarent.challenge.store.exceptions.CartAlreadyExistForUser;
 import de.tarent.challenge.store.exceptions.CartWithoutItemsException;
 import de.tarent.challenge.store.exceptions.NoCurrentCartException;
+import de.tarent.challenge.store.exceptions.NoProductWithSkufoundException;
+import de.tarent.challenge.store.exceptions.ProductNotEnabledException;
 import de.tarent.challenge.store.exceptions.StoreException;
 import de.tarent.challenge.store.exceptions.UserNotFoundException;
 import de.tarent.challenge.store.products.Product;
@@ -170,6 +172,17 @@ public class CartControllerTests extends AbstractTest {
 		assertTrue(cart.getCartItems().size() == numItms - 1);
 		assertNull(cart.getCartItemOfProduct("2035"));
 	}
+	
+	@Test
+	public void givenDisabledProduct_WennAddItemToCart_thenException() throws Exception {
+
+		Cart currentCart = cartService.createNewCartForUser(1L, TEST_CART_ITEMS_DTO);
+
+		given().contentType(ContentType.JSON).body(TEST_CART_ITEM2_DTO).when().patch("/cart/1/addItem")
+				.then().assertThat().statusCode(HttpURLConnection.HTTP_BAD_REQUEST).body(containsString(ProductNotEnabledException.class.getName()));
+
+	}
+	
 
 	@Test
 	public void givenCurrentCart_whenCheckoutCart_thenCheckout() throws Exception {

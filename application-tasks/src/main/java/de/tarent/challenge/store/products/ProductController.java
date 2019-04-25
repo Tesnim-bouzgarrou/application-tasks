@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.tarent.challenge.store.exceptions.StoreException;
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -56,6 +58,19 @@ public class ProductController {
 		productService.updateProduct(product);
 		return new ResponseEntity<>(product, HttpStatus.OK);
 	}
+	
+	
+	@PutMapping("/{sku}/enable")
+	public ResponseEntity<Object> enableProduct(@PathVariable String sku) throws StoreException {
+		Product product = productService.enableProductBySku(sku);
+		return new ResponseEntity<>(product, HttpStatus.OK);
+	}
+	
+	@PutMapping("/{sku}/disable")
+	public ResponseEntity<Object> disableProduct(@PathVariable String sku) throws StoreException {
+		Product product = productService.disableProductBySku(sku);
+		return new ResponseEntity<>(product, HttpStatus.OK);
+	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -74,6 +89,14 @@ public class ProductController {
 	public Map<String, String> handleNonUniqueExceptions(NonUniqueResultException ex) {
 		Map<String, String> errors = new HashMap<>();
 		errors.put("", ex.getMessage());
+		return errors;
+	}
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(StoreException.class)
+	public Map<String, String> handleStoreExceptions(StoreException ex) {
+		Map<String, String> errors = new HashMap<>();
+		errors.put(ex.getClass().getName(), ex.getMessage());
 		return errors;
 	}
 

@@ -77,10 +77,10 @@ public class CartServiceTests extends AbstractTest {
 	
 	@Before
 	public void initDB() throws StoreException {
-		cartService.deleteAllCarts();
-		productService.deleteAllProducts();
-		productService.addProduct(TEST_PRODUCT);
-		productService.addProduct(TEST_PRODUCT1);
+//		cartService.deleteAllCarts();
+//		productService.deleteAllProducts();
+//		productService.addProduct(TEST_PRODUCT);
+//		productService.addProduct(TEST_PRODUCT1);
 
 	}
 	

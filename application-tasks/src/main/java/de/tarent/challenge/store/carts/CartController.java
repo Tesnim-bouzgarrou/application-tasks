@@ -92,7 +92,8 @@ public class CartController {
 		Cart checkedoutCart = cartService.checkoutCurrentCartByUser(userId);
 		return new ResponseEntity<>(checkedoutCart, HttpStatus.OK);
 	}
-
+	
+	
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)

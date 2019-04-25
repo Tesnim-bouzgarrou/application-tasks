@@ -6,6 +6,9 @@ import javax.persistence.NonUniqueResultException;
 
 import org.springframework.stereotype.Service;
 
+import de.tarent.challenge.store.exceptions.NoProductWithSkufoundException;
+import de.tarent.challenge.store.exceptions.StoreException;
+
 @Service
 public class ProductService {
 
@@ -45,7 +48,26 @@ public class ProductService {
 	}
 
 	public void deleteAllProducts() {
-		productCatalog.deleteAll();
+		//productCatalog.deleteAll();
 
 	}
+
+	public Product enableProductBySku(String sku) throws StoreException  {
+		Product product = retrieveProductBySku(sku);
+		if(product == null) {
+			throw new NoProductWithSkufoundException(" No product with sku "+sku+" is found");
+		}
+		product.setEnabled(true);
+		return productCatalog.save(product);
+	}
+	
+	public Product disableProductBySku(String sku) throws StoreException {
+		Product product = retrieveProductBySku(sku);
+		if(product == null) {
+			throw new NoProductWithSkufoundException(" No product with sku "+sku+" is found");
+		}
+		product.setEnabled(false);
+		return productCatalog.save(product);
+	}
+
 }
